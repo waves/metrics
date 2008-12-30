@@ -1,0 +1,12 @@
+The requires for this project work when it lives at the top level of the waves source.
+
+E.g.
+  
+  waves/
+    bin/
+    doc/
+    lib/
+->  metrics/ <-
+    samples/
+    templates/
+    test/
