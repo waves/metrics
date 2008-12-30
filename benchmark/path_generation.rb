@@ -10,7 +10,7 @@ def generate(zipped, count, offset=50)
   end 
 end
 
-n = 2000
+n = 5000
 
 puts "Path generation benchmarks"
 
@@ -50,7 +50,9 @@ Benchmark.bmbm(20) do |x|
       generate(zipped, 50) { |t,a| paths.generate(t, a)  }
     end
   end
-    
+  
+  paths = Class.new( Waves::Resources::Paths ).new
+  
   x.report("*original*:  50 paths") do
     n.times do
       generate(zipped, 50) { |t,a| paths.original_generate(t, a)  }
