@@ -16,7 +16,7 @@ module PathTemplateGenerator
     srand(seed)
     templates = []
     count.times do
-      size = rand(4) + 2
+      size = rand(5) + 2
       template = []
       size.times { template << SOURCE[rand(SOURCE.size)] }
       templates << template
@@ -25,9 +25,9 @@ module PathTemplateGenerator
   end
 
   def templates_and_args(count)
-    templates = generate_random_templates(800)
-    argses = templates.map { |t| Array.new( t.map { |e| true unless e.is_a? String }.compact.size, "foo") }
-    zipped = templates.zip(argses)
+    @templates ||= generate_random_templates(2000)
+    argses = @templates.map { |t| Array.new( t.map { |e| true unless e.is_a? String }.compact.size, "foo") }
+    zipped = @templates.zip(argses)
     zipped.slice(0, count).map { |t,a| [t, a.dup] }
   end
   

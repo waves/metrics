@@ -7,6 +7,30 @@ class Stevedore
   
   def self.reset; @instances = []; end
   
+  def self.power_test(r, sd)
+    if sd < 0.00007
+      warn "Stddev is very small, which makes power.t.test sad. Setting stddev to 0.00007 so we can get this done."
+      sd = 0.00007
+    end
+    r.power_t_test :delta => 0.001, :power => 0.9, :sig_level => 0.01, :sd => sd 
+  end
+  
+  def self.recommend_test_size(run_count, sample_size)
+    @instances.each do |instance|
+      puts "Running '#{instance.name}'"
+      instance.go(run_count, sample_size)
+      puts "Mean:   #{instance.mean}"
+      puts "Stddev: #{instance.standard_deviation}"
+    end
+    worst = @instances.sort_by { |i| i.standard_deviation }.last
+    puts "\nUsing '#{worst.name}' for power test, because it has the greatest stddev."
+    r = RSRuby.instance
+    rec_runs = power_test(r, worst.standard_deviation )['n'].to_i
+    rec_size = power_test(r, r.sd( worst.sample_means) )['n'].to_i
+    puts "Power test recommends #{rec_runs} sample runs of #{rec_size} measurements."
+    [rec_runs, rec_size]
+  end
+  
   def self.before(&block)
     block ? @before = block : @before
   end
@@ -47,11 +71,40 @@ class Stevedore
     @delta = 0.001
     @power = 0.9
     @sig_level = 0.01
-    instance_eval &block if block
+    instance_eval( &block ) if block
   end
   
   def reset
     @samples = []
+  end
+  
+  # Run a small set of samples and use a power test to determine
+  # the optimal run count and sample size.
+  def preliminary(run_count, sample_size)
+    go(run_count, sample_size)
+    pt = power_test( @r.sd( self.sample_means ) )
+    puts "Power test recommends at least #{pt["n"].to_i} samples" if pt
+    pt = power_test( @r.max( self.sample_standard_deviations ) )
+    puts "Power test recommends at least #{pt["n"].to_i} measurements\n\n" if pt
+  end
+  
+  def go(run_count, sample_size)
+    reset
+    instance_eval( &@before ) if @before
+    run_count.times do
+      sample = []
+      instance_eval( &@before_sample ) if @before_sample
+      sample_size.times do
+        instance_eval( &@before_measure ) if @before_measure
+        sample << Benchmark.realtime do          
+          instance_eval( &@measure )
+        end
+        instance_eval( &@after_measure ) if @after_measure
+      end
+      instance_eval( &@after_sample ) if @after_sample
+      @samples << sample
+    end
+    instance_eval( &@after ) if @after
   end
   
   # Define a block to evaluate before any samples are taken
@@ -75,23 +128,7 @@ class Stevedore
   def measure(&block); @measure = block; end
   
   
-  def go(run_count, sample_size)
-    instance_eval &@before if @before
-    run_count.times do
-      sample = []
-      instance_eval &@before_sample if @before_sample
-      sample_size.times do
-        instance_eval &@before_measure if @before_measure
-        sample << Benchmark.realtime do          
-          instance_eval &@measure
-        end
-        instance_eval &@after_measure if @after_measure
-      end
-      instance_eval &@after_sample if @after_sample
-      @samples << sample
-    end
-    instance_eval &@after if @after
-  end
+
   
   # statistics
   
@@ -112,16 +149,18 @@ class Stevedore
   end
   
   def power_test(sd)
-    { :delta => @delta, :power => @power, :sig_level => @sig_level, :sd => sd }
-    @r.power_t_test 
+    @r.power_t_test :delta => @delta, :power => @power, :sig_level => @sig_level, :sd => sd 
+  rescue RException
+    puts "R power.t.test puked, probably because of a very low standard deviation."
   end
   
   def report
     puts self.name
-    puts "Mean: #{self.mean}"
-    puts "Overall standard deviation: #{self.standard_deviation}"
+    puts "#{run_count} sample runs, #{sample_size} measurements each"
+    puts "  Mean: #{self.mean}"
+    puts "  Overall standard deviation: #{self.standard_deviation}"
     # puts "Max sample standard deviation: #{@r.max self.sample_standard_deviations}"
-    puts "Sample means standard_deviation: #{@r.sd self.sample_means}"
+    puts "  Sample means standard_deviation: #{@r.sd self.sample_means}"
     puts
   end
   
