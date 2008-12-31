@@ -57,25 +57,26 @@ precompiled.measure do
   @templates_and_args.each { |t,a| @paths.generate(t, a)  }
 end
 
-compiled = PathGenPerf.new("New method, no precompilation")
-compiled.measure do
-  @templates_and_args.each { |t,a| @paths.generate(t, a)  }
-end
-compiled.after_measure do
-  @paths.compiled_paths.clear
-end
-
-
-original = PathGenPerf.new("Old method")
-original.measure do
-  @templates_and_args.each { |t,a| @paths.original_generate(t, a)  }
+compiled = PathGenPerf.new("New method, no precompilation") do
+  measure do
+    @templates_and_args.each { |t,a| @paths.generate(t, a)  }
+  end
+  after_measure do
+    @paths.compiled_paths.clear
+  end
 end
 
-precompiled.go(5, 50)
+original = PathGenPerf.new("Old method") do
+  measure do
+    @templates_and_args.each { |t,a| @paths.original_generate(t, a)  }
+  end
+end
+
+precompiled.go(3, 50)
 precompiled.report
 
-compiled.go(5, 50)
+compiled.go(3, 50)
 compiled.report
 
-original.go(5, 50)
+original.go(3, 50)
 original.report

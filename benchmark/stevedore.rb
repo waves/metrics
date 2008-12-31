@@ -35,7 +35,7 @@ class Stevedore
   
   attr_accessor :name, :samples, :delta, :sig_level, :power, :r
   
-  def initialize(name)
+  def initialize(name, &block)
     klass = self.class
     klass.instances << self
     @before, @after = klass.before, klass.after
@@ -47,6 +47,7 @@ class Stevedore
     @delta = 0.001
     @power = 0.9
     @sig_level = 0.01
+    instance_eval &block if block
   end
   
   def reset
