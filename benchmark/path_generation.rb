@@ -4,30 +4,50 @@ templates = PathTemplate.generate_random(800)
 argses = templates.map { |t| Array.new( t.map { |e| true unless e.is_a? String }.compact.size, "foo") }
 zipped = templates.zip(argses)
 
-def generate(zipped, count, offset=50)
-  zipped.slice(offset, count).each do |t,a|
-    yield t, a.dup
-  end 
+class PathGenPerf < Steve
+  
+  sample_setup do
+    @paths = Class.new( Waves::Resources::Paths ).new
+  end
+  
+  # helper methods
+  def foo(zipped, count, offset=50)
+    zipped.slice(offset, count).each do |t,a|
+      yield t, a.dup
+    end 
+  end
 end
 
-steve = Steve.new("Path generation with compilation")
-
-def steve.sample_setup
-  @paths = Class.new( Waves::Resources::Paths ).new
+compiled = PathGenPerf.new("Path generation with compilation")
+compiled.work do
+  foo(zipped, 100) { |t,a| @paths.generate(t, a)  }
 end
 
-def steve.work(zipped)
-  generate(zipped, 50) { |t,a| @paths.generate(t, a)  }
-end
+compiled.go(3, 250, zipped)
+compiled.report
 
-
-steve.go(10, 70, zipped) { |sample| puts "mean: #{sample.mean}, sigma: #{sample.standard_deviation}" }
-
-puts "Runs mean: #{steve.runs_mean}"
-puts "Runs sigma: #{steve.runs_sigma}"
-
-steve.reset
-
+# precompiled = PathGenPerf.new("Path generation with precompiled paths")
+# 
+# def precompiled.sample_setup(zipped)
+#   @paths = Class.new( Waves::Resources::Paths ).new
+#   generate(zipped, 500) { |t,a| @paths.generate(t, a)  }
+# end
+# 
+# def precompiled.work(zipped)
+#   generate(zipped, 100) { |t,a| @paths.generate(t, a)  }
+# end
+# 
+# precompiled.go(3, 250, zipped)
+# precompiled.report
+# 
+# original = PathGenPerf.new("Path generation (original method)")
+# 
+# def original.work(zipped)
+#   generate(zipped, 100) { |t,a| @paths.original_generate(t, a)  }
+# end
+# 
+# original.go(3, 250, zipped)
+# original.report
 
 # puts "Path generation benchmarks"
 # 
