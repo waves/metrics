@@ -14,7 +14,3 @@ E.g.
 The Stevedore benchmarking tool/toy uses rsruby, so you'll need to install R, tell your shell where R_HOME is, and install the rsruby gem.
 
 As the rsruby gem uses a C extension, this is problematic.
-
-I need to consider shelling out to R for the power.t.test.  A pure Ruby lib could do the stddev calc.
-
-$ /user/bin/R --slave -e 'power.t.test(power=0.9, delta=0.0001, sd=0.001133, sig.level=0.01)["n"]'
