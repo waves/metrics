@@ -25,7 +25,7 @@ module PathTemplateGenerator
   end
 
   def templates_and_args(count)
-    @templates ||= generate_random_templates(2000)
+    @templates ||= generate_random_templates(count)
     argses = @templates.map { |t| Array.new( t.map { |e| true unless e.is_a? String }.compact.size, "foo") }
     zipped = @templates.zip(argses)
     zipped.slice(0, count).map { |t,a| [t, a.dup] }

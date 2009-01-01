@@ -10,7 +10,7 @@ class PathGenPerf < Steve
 
   before_measure do
     # generate an array of [template, args] before each measurement
-    @templates_and_args = templates_and_args(400)
+    @templates_and_args = templates_and_args(2000)
   end
   
 end
@@ -18,7 +18,7 @@ end
 precompiled = PathGenPerf.new("New method, test paths precompiled") do
   before_sample do
     # precompile the templates that will be used
-    @precompile = templates_and_args(400)
+    @precompile = templates_and_args(2000)
     @precompile.each { |t,a| @paths.generate(t, a)  }
   end
   measure do
@@ -41,19 +41,8 @@ original = PathGenPerf.new("Old method") do
   end
 end
 
-PathGenPerf.recommend_test_size(10, 50)
 
-# precompiled.preliminary(10, 60)
-# 
-# compiled.preliminary(10, 60)
-# 
-# original.preliminary(10, 60)
+test_size = PathGenPerf.recommend_test_size(8, 64)
 
-# precompiled.go(3, 50)
-# precompiled.report
-# 
-# compiled.go(3, 50)
-# compiled.report
-# 
-# original.go(3, 50)
-# original.report
+PathGenPerf.compare_instances(*test_size)
+
