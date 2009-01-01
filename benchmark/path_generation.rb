@@ -3,6 +3,9 @@ require "#{File.dirname(__FILE__)}/helpers"
 class PathGenPerf < Steve
   include PathTemplateGenerator
   
+  power 0.8
+  sig_level 0.05
+  
   before do
     # set up the Paths object
     @paths = Class.new( Waves::Resources::Paths ).new
