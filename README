@@ -10,3 +10,5 @@ E.g.
     samples/
     templates/
     test/
+
+The Stevedore benchmarking tool/toy uses rsruby, so you'll need to install R, tell your shell where R_HOME is, and install the rsruby gem.

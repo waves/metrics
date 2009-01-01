@@ -22,20 +22,9 @@ class Stevedore
     @flattened_samples = []
   end
   
-  # Run a small set of samples and use a power test to determine
-  # the optimal run count and sample size.
-  def preliminary(run_count, sample_size)
-    go(run_count, sample_size)
-    pt = power_test( @r.sd( self.sample_means ) )
-    puts "Power test recommends at least #{pt["n"].to_i} samples" if pt
-    pt = power_test( @r.max( self.sample_standard_deviations ) )
-    puts "Power test recommends at least #{pt["n"].to_i} measurements\n\n" if pt
-  end
-  
   def go(run_count, sample_size)
     reset
     instance_eval( &@before ) if @before
-    print " - Samples run:  "; $stdout.flush
     run_count.times do |i|
       sample = []
       instance_eval( &@before_sample ) if @before_sample
@@ -48,9 +37,7 @@ class Stevedore
       end
       instance_eval( &@after_sample ) if @after_sample
       @samples << sample
-      print "\b#{i + 1}"; $stdout.flush
     end
-    puts
     instance_eval( &@after ) if @after
   end
   
@@ -169,6 +156,8 @@ class Stevedore
     block ? @after_measure = block : @after_measure
   end
   
+  # Run a small set of samples and use a power test to determine
+  # the optimal run count and sample size.
   def self.recommend_test_size(run_count, sample_size)
     puts "\nRunning trials (#{run_count} runs of #{sample_size}) for each instance.\n\n"
     @instances.each do |instance|
