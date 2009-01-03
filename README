@@ -11,6 +11,4 @@ E.g.
     templates/
     test/
 
-The Stevedore benchmarking tool/toy uses rsruby, so you'll need to install R, tell your shell where R_HOME is, and install the rsruby gem.
-
-As the rsruby gem uses a C extension, this is problematic.
+You'll need the automatthew-stevedore gem, and having the R language installed lets you do fun things.
