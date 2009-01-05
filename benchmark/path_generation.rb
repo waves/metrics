@@ -1,7 +1,7 @@
 require "#{File.dirname(__FILE__)}/helpers"
 
 class PathGeneration < Steve
-  include PathTemplateGenerator
+  include PathTemplate
   
   power 0.8
   sig_level 0.05
@@ -13,7 +13,7 @@ class PathGeneration < Steve
 
   before_measure do
     # generate an array of [template, args] before each measurement
-    @templates_and_args = templates_and_args(1200)
+    @templates_and_args = templates_and_args(200)
   end
   
 end
@@ -21,7 +21,7 @@ end
 
 precompiled = PathGeneration.new("New method, test paths precompiled") do
   before_sample do
-    @precompile = templates_and_args(1200)
+    @precompile = templates_and_args(200)
     @precompile.each { |t,a| @paths.generate(t, a)  }
   end
   measure do
@@ -45,7 +45,7 @@ original = PathGeneration.new("Old method") do
 end
 
 
-test_size = PathGeneration.recommend_test_size(8, 64)
+# test_size = PathGeneration.recommend_test_size(8, 64)
 
-PathGeneration.compare_instances(*test_size)
+PathGeneration.compare_instances(8, 32)
 
