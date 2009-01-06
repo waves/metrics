@@ -1,7 +1,7 @@
 require "#{File.dirname(__FILE__)}/helpers"
 
 class PathGeneration < Steve
-  include PathTemplate
+  # include PathTemplate
   
   power 0.8
   sig_level 0.05

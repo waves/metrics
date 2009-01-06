@@ -4,7 +4,7 @@ require "foundations/compact"
 $:.unshift "#{File.dirname(__FILE__)}/stevedore/lib"
 require 'stevedore'
 
-module PathTemplate
+class PathTemplateGenerator
   
   Strings =  ("a".."z").to_a 
   Symbols = Strings.map {|l| l.to_sym }
@@ -18,15 +18,40 @@ module PathTemplate
   def seed; @seed ||= 4815162342; end
   def seed=(i); @seed = i; end
   
+  attr_accessor :sources
+    
+  def initialize(weights=nil)
+    weights ? weighting(weights) : weighting( :strings => 1, :symbols => 1, :regexes => 1, :hashes => 1)
+  end
   
+  def weighting(weights={})
+    @sources = []
+    @value_sources = []
+    string_weight = weights[:strings] || 1
+    symbol_weight = weights[:symbols] || 1 
+    @value_sources.concat Strings * string_weight.to_i
+    @value_sources.concat Symbols *  symbol_weight.to_i
+    @value_sources.concat Regexes * weights[:regexes].to_i
+    
+    hashes = []; weights[:hashes].to_i.times do
+       Symbols.each do |s|
+        hashes << { s => @value_sources[rand(@value_sources.size)] }
+      end
+    end
+    @sources.concat (@value_sources + hashes)
+  end
   
-  def generate_random(count)
+  def hashes
+    
+  end
+  
+  def random(count)
     srand(seed)
     templates = []
     count.times do
       size = rand(5) + 2
       template = []
-      size.times { template << SOURCE[rand(SOURCE.size)] }
+      size.times { template << @sources[rand(@sources.size)] }
       templates << template
     end
     templates
