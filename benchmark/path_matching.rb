@@ -3,7 +3,7 @@ require "#{File.dirname(__FILE__)}/helpers"
 # request = Waves::Request.new( env( "/foo/bar%20baz/bat-hat/doo_dah", :method => 'GET' ) )
 
 Waves::Matchers::Path.module_eval do
-  def original_call( request )
+  def call_a142578( request )
     return {} if @pattern == true or @pattern == false or @pattern.nil?
     path = extract_path( request ).reverse
     return {} if ( path.empty? and @pattern.empty? )
@@ -51,31 +51,29 @@ end
 
 
 class PathMatch < Steve
-  include PathTemplate
   
-  power 0.7
-  sig_level 0.1
+  subject "Refactoring Waves::Matchers::Path#call"
+  
   before do
-    @templates = generate_random(500)
+    @generator = PathGen.new :length => 0..5, :strings => 1, :symbols => 1, :hashes => 1
+    @templates = @generator.templates(200)
     @request =  request("/foo/bar%20baz/bat-hat/doo_dah")
-    @matchers = @templates.map { |t| Waves::Matchers::Path.new( t ) } 
+    @matchers_and_paths = @templates.map { |t| Waves::Matchers::Path.new( t ) }.zip @generator.paths 
   end
 end
 
-n = 1000
-
-mine = PathMatch.new "Me" do
+mine = PathMatch.new "better?" do
   measure do
-    @matchers.each do |matcher|
-      matcher.call(@request)
+    @matchers_and_paths.each do |m, p|
+      x = m.call(request(p))
     end
   end
 end
 
-original = PathMatch.new "Dan" do
+original = PathMatch.new "as of a142578" do
   measure do
-    @matchers.each do |matcher|
-      matcher.call(@request)
+    @matchers_and_paths.each do |m, p|
+      x = m.call_a142578(request(p))
     end
   end
 end
