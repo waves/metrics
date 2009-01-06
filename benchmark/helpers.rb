@@ -8,11 +8,17 @@ module PathTemplate
   
   Strings =  ("a".."z").to_a 
   Symbols = Strings.map {|l| l.to_sym }
-  Hashes = []; Symbols.each_with_index { |s, i| Hashes << { s => Strings[i]} }
-  SOURCE = Strings + Symbols + Hashes
+  Regexes = []; 26.times { Regexes << /smurf/ }
+  Values = Strings + Symbols + Regexes
+  Hashes = []; Symbols.each_with_index do |s, i|
+    Hashes << { s => Values[rand(Values.size)]}
+  end
+  SOURCE = Strings + Symbols + Regexes + Hashes
   
   def seed; @seed ||= 4815162342; end
   def seed=(i); @seed = i; end
+  
+  
   
   def generate_random(count)
     srand(seed)
@@ -28,6 +34,27 @@ module PathTemplate
   
   def args_for_template(template)
     Array.new(template.map { |e| true unless e.is_a? String }.compact.size, "smurf" )
+  end
+  
+  def path_for_template(template)
+    template.map do |element|
+      case element
+      when String
+        element
+      when Symbol
+        "#{element}_value"
+      when Regexp # all regexes are /smurf/
+        "smurf"
+      when Hash
+        key, value = element.to_a.first
+        out = case value
+        when String, Symbol
+          "#{key}_value"
+        when Regexp
+          "smurf" # all regexes are /smurf/
+        end
+      end
+    end
   end
 
   def templates_and_args(count)

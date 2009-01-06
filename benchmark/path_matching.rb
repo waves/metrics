@@ -75,7 +75,7 @@ end
 original = PathMatch.new "Dan" do
   measure do
     @matchers.each do |matcher|
-      matcher.call(request)
+      matcher.call(@request)
     end
   end
 end
